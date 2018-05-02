@@ -17,6 +17,14 @@
              :disabled="tab.disabled"
              :title="tab.name">
         {{tab.name}}
+          <vue-tabs :querystring-id="'tabs' + index">
+            <v-tab title="FIRST">
+              first
+            </v-tab>
+            <v-tab title="SECOND">
+              second
+            </v-tab>
+          </vue-tabs>
       </v-tab>
     </vue-tabs>
     <button @click="tabList.push({name:'test'})">Add more!</button>

@@ -72,6 +72,7 @@ export default {
             this.$emit('input', tab.title)
         },
         changeTab(oldIndex, newIndex, route) {
+            console.log("changing", ...arguments)
             let oldTab = this.tabs[oldIndex] || {}
             let newTab = this.tabs[newIndex]
             if (newTab.disabled) return;
@@ -87,7 +88,7 @@ export default {
                 var newTabTitle = encodeURIComponent(newTab.title);
                 var newUrl;
                 //if no querystring, add it to the end of the url
-                if (window.location.href.indexOf(querystringId) === -1) {
+                if (window.location.href.indexOf("?") === -1) {
                     newUrl = window.location.href + `?${querystringId}=${newTabTitle}`;
                 } else {
                     //if there is a querystring, but the querystringId isn't in there append it
@@ -242,8 +243,11 @@ export default {
     mounted() {
         if (this.querystringId) {
             var tabLabelToActivate = getParameterByName(this.querystringId);
-            if (tabLabelToActivate)
-                this.findTabAndActivate(tabLabelToActivate)
+            if (tabLabelToActivate){
+                this.$nextTick(() => {
+                    this.findTabAndActivate(tabLabelToActivate)
+                })
+            }
         }
     }
 }

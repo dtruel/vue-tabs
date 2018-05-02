@@ -135,6 +135,9 @@ var VueTabs = {
             this.$emit('input', tab.title);
         },
         changeTab: function changeTab(oldIndex, newIndex, route) {
+            var _console;
+
+            (_console = console).log.apply(_console, ["changing"].concat(Array.prototype.slice.call(arguments)));
             var oldTab = this.tabs[oldIndex] || {};
             var newTab = this.tabs[newIndex];
             if (newTab.disabled) return;
@@ -150,7 +153,7 @@ var VueTabs = {
                 var newTabTitle = encodeURIComponent(newTab.title);
                 var newUrl;
                 //if no querystring, add it to the end of the url
-                if (window.location.href.indexOf(querystringId) === -1) {
+                if (window.location.href.indexOf("?") === -1) {
                     newUrl = window.location.href + ('?' + querystringId + '=' + newTabTitle);
                 } else {
                     //if there is a querystring, but the querystringId isn't in there append it
@@ -363,9 +366,15 @@ var VueTabs = {
         }
     },
     mounted: function mounted() {
+        var _this2 = this;
+
         if (this.querystringId) {
             var tabLabelToActivate = getParameterByName(this.querystringId);
-            if (tabLabelToActivate) this.findTabAndActivate(tabLabelToActivate);
+            if (tabLabelToActivate) {
+                this.$nextTick(function () {
+                    _this2.findTabAndActivate(tabLabelToActivate);
+                });
+            }
         }
     }
 };
