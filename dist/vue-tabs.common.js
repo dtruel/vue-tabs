@@ -25,6 +25,9 @@ var VueTabs = {
             type: String,
             default: 'center'
         },
+        querystringId: {
+            type: String
+        },
         /**
          * Tab type: tabs | pills
          */
@@ -92,6 +95,11 @@ var VueTabs = {
             this.$emit('input', this.tabs[newIndex].title);
             this.$emit('tab-change', newIndex, newTab, oldTab);
             this.tryChangeRoute(route);
+            //save tab route in querystring
+            if (this.querystringId) {
+                var newUrl = UpdateQueryString(this.querystringId, newTab.title, window.location.href);
+                window.history.replaceState({ path: newUrl }, '', newUrl);
+            }
         },
         tryChangeRoute: function tryChangeRoute(route) {
             if (this.$router && route) {
@@ -287,8 +295,49 @@ var VueTabs = {
         value: function value(newVal) {
             this.findTabAndActivate(newVal);
         }
+    },
+    mounted: function mounted() {
+        if (this.querystringId) {
+            var tabLabelToActivate = getParameterByName(this.querystringId);
+            if (tabLabelToActivate) this.findTabAndActivate(tabLabelToActivate);
+        }
     }
 };
+
+/** https://stackoverflow.com/users/1187814/ellemayo */
+function UpdateQueryString(key, value, url) {
+    if (!url) url = window.location.href;
+    var re = new RegExp("([?&])" + key + "=.*?(&|#|$)(.*)", "gi"),
+        hash;
+
+    if (re.test(url)) {
+        if (typeof value !== 'undefined' && value !== null) return url.replace(re, '$1' + key + "=" + value + '$2$3');else {
+            hash = url.split('#');
+            url = hash[0].replace(re, '$1$3').replace(/(&|\?)$/, '');
+            if (typeof hash[1] !== 'undefined' && hash[1] !== null) url += '#' + hash[1];
+            return url;
+        }
+    } else {
+        if (typeof value !== 'undefined' && value !== null) {
+            var separator = url.indexOf('?') !== -1 ? '&' : '?';
+            hash = url.split('#');
+            url = hash[0] + separator + key + '=' + value;
+            if (typeof hash[1] !== 'undefined' && hash[1] !== null) url += '#' + hash[1];
+            return url;
+        } else return url;
+    }
+}
+
+/** https://stackoverflow.com/a/901144/3413723 */
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
 
 var VTab = {
     name: 'v-tab',

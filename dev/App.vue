@@ -9,6 +9,7 @@
               type="pills"
               @tab-change="handleTabChange"
               @on-error="handleError"
+              querystring-id="querytest"
               v-model="tabName">
       <div slot={}></div>
       <v-tab v-for="(tab, index) in tabList"

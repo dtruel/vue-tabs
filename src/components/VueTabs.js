@@ -12,6 +12,9 @@ export default {
             type: String,
             default: 'center'
         },
+        querystringId: {
+            type: String
+        },
         /**
          * Tab type: tabs | pills
          */
@@ -29,29 +32,29 @@ export default {
         centered: Boolean,
         value: [String, Number, Object]
     },
-    data () {
+    data() {
         return {
             activeTabIndex: 0,
             tabs: []
         }
     },
     computed: {
-        isTabShape () {
+        isTabShape() {
             return this.type === 'tabs'
         },
-        isStacked () {
+        isStacked() {
             return this.direction === 'vertical'
         },
-        classList () {
+        classList() {
             let navType = this.isTabShape ? 'nav-tabs' : 'nav-pills'
             let centerClass = this.centered ? 'nav-justified' : ''
             let isStacked = this.isStacked ? 'nav-stacked' : ''
             return `nav ${navType} ${centerClass} ${isStacked}`
         },
-        stackedClass () {
+        stackedClass() {
             return this.isStacked ? 'stacked' : ''
         },
-        activeTabStyle () {
+        activeTabStyle() {
             return {
                 backgroundColor: this.activeTabColor,
                 color: this.activeTextColor
@@ -59,16 +62,16 @@ export default {
         }
     },
     methods: {
-        navigateToTab (index, route) {
+        navigateToTab(index, route) {
             this.changeTab(this.activeTabIndex, index, route)
         },
-        activateTab (index) {
+        activateTab(index) {
             this.activeTabIndex = index
             let tab = this.tabs[index]
             tab.active = true
             this.$emit('input', tab.title)
         },
-        changeTab (oldIndex, newIndex, route) {
+        changeTab(oldIndex, newIndex, route) {
             let oldTab = this.tabs[oldIndex] || {}
             let newTab = this.tabs[newIndex]
             if (newTab.disabled) return;
@@ -78,30 +81,35 @@ export default {
             this.$emit('input', this.tabs[newIndex].title)
             this.$emit('tab-change', newIndex, newTab, oldTab)
             this.tryChangeRoute(route)
+            //save tab route in querystring
+            if (this.querystringId) {
+                var newUrl = UpdateQueryString(this.querystringId, newTab.title, window.location.href)
+                window.history.replaceState({ path: newUrl }, '', newUrl);
+            }
         },
-        tryChangeRoute (route) {
+        tryChangeRoute(route) {
             if (this.$router && route) {
                 this.$router.push(route)
             }
         },
-        addTab (item) {
+        addTab(item) {
             const index = this.$slots.default.indexOf(item.$vnode);
             this.tabs.splice(index, 0, item);
         },
-        removeTab (item) {
+        removeTab(item) {
             const tabs = this.tabs;
             const index = tabs.indexOf(item);
             if (index > -1) {
                 tabs.splice(index, 1);
             }
         },
-        getTabs () {
+        getTabs() {
             if (this.$slots.default) {
                 return this.$slots.default.filter(comp => comp.componentOptions)
             }
             return []
         },
-        findTabAndActivate (tabNameOrIndex) {
+        findTabAndActivate(tabNameOrIndex) {
             let indexToActivate = this.tabs.findIndex((tab, index) => tab.title === tabNameOrIndex || index === tabNameOrIndex)
             if (indexToActivate === this.activeTabIndex) return
             if (indexToActivate !== -1) {
@@ -110,11 +118,11 @@ export default {
                 this.changeTab(this.activeTabIndex, 0)
             }
         },
-        renderTabTitle (index, position = 'top') {
+        renderTabTitle(index, position = 'top') {
             if (this.tabs.length === 0) return
             let tab = this.tabs[index]
-            let {active, title} = tab
-            let titleStyles = {color: this.activeTabColor}
+            let { active, title } = tab
+            let titleStyles = { color: this.activeTabColor }
             if (position === 'center') titleStyles.color = this.activeTextColor
             let simpleTitle = (<span class={`title title_${position}`} style={active ? titleStyles : {}}>{position === 'center' && this.renderIcon(index)}{title}</span>)
 
@@ -128,14 +136,14 @@ export default {
             });
             return simpleTitle
         },
-        renderIcon (index) {
+        renderIcon(index) {
             if (this.tabs.length === 0) return
             let tab = this.tabs[index]
-            let {icon} = tab
+            let { icon } = tab
             let simpleIcon = <i class={icon}>&nbsp;</i>
             if (!tab.$slots.title && icon) return simpleIcon
         },
-        tabStyles (tab) {
+        tabStyles(tab) {
             if (tab.disabled) {
                 return {
                     backgroundColor: this.disabledColor,
@@ -144,61 +152,61 @@ export default {
             }
             return {}
         },
-        renderTabs () {
+        renderTabs() {
             return this.tabs.map((tab, index) => {
                 if (!tab) return
-                let {route, id, title, icon, tabId} = tab
+                let { route, id, title, icon, tabId } = tab
                 let active = this.activeTabIndex === index
                 return (
                     <li name="tab" onClick={() => !tab.disabled && this.navigateToTab(index, route)}
-                        class={['tab', {active: active}, {disabled: tab.disabled}]}
+                        class={['tab', { active: active }, { disabled: tab.disabled }]}
                         key={title}
                         id={`t-${tabId}`}
                         aria-selected={active}
                         aria-controls={`p-${tabId}`}
                         role="tab">
                         {this.textPosition === 'top' &&
-                        this.renderTabTitle(index, this.textPosition)
+                            this.renderTabTitle(index, this.textPosition)
                         }
                         <a href="#"
-                           onClick={(e) => {
-                             e.preventDefault();
-                             return false;
-                           }}
-                           style={active ? this.activeTabStyle : this.tabStyles(tab)}
-                           class={[{'active_tab': active}, 'tabs__link']}
-                           role="tab">
+                            onClick={(e) => {
+                                e.preventDefault();
+                                return false;
+                            }}
+                            style={active ? this.activeTabStyle : this.tabStyles(tab)}
+                            class={[{ 'active_tab': active }, 'tabs__link']}
+                            role="tab">
                             {this.textPosition !== 'center' && !tab.$slots.title && this.renderIcon(index)}
                             {this.textPosition === 'center' &&
-                            this.renderTabTitle(index, this.textPosition)
+                                this.renderTabTitle(index, this.textPosition)
                             }
                         </a>
                         {this.textPosition === 'bottom' &&
-                        this.renderTabTitle(index, this.textPosition)
+                            this.renderTabTitle(index, this.textPosition)
                         }
                     </li>
                 )
             })
         }
     },
-    render () {
+    render() {
         const tabList = this.renderTabs()
         return (
             <div class={['vue-tabs', this.stackedClass]}>
-                <div class={[{'nav-tabs-navigation': !this.isStacked}, {'left-vertical-tabs': this.isStacked}]}>
+                <div class={[{ 'nav-tabs-navigation': !this.isStacked }, { 'left-vertical-tabs': this.isStacked }]}>
                     <div class={['nav-tabs-wrapper', this.stackedClass]}>
                         <ul class={this.classList} role="tablist">
                             {tabList}
                         </ul>
                     </div>
                 </div>
-                <div class={['tab-content', {'right-text-tabs': this.isStacked}]}>
+                <div class={['tab-content', { 'right-text-tabs': this.isStacked }]}>
                     {this.$slots.default}
                 </div>
             </div>)
     },
     watch: {
-        tabs (newList) {
+        tabs(newList) {
             if (newList.length > 0 && !this.value) {
                 if (newList.length <= this.activeTabIndex) {
                     this.activateTab(this.activeTabIndex - 1);
@@ -210,8 +218,57 @@ export default {
                 this.findTabAndActivate(this.value)
             }
         },
-        value (newVal) {
+        value(newVal) {
             this.findTabAndActivate(newVal)
         }
+    },
+    mounted() {
+        if (this.querystringId) {
+            var tabLabelToActivate = getParameterByName(this.querystringId);
+            if (tabLabelToActivate)
+                this.findTabAndActivate(tabLabelToActivate)
+        }
     }
+}
+
+/** https://stackoverflow.com/users/1187814/ellemayo */
+function UpdateQueryString(key, value, url) {
+    if (!url) url = window.location.href;
+    var re = new RegExp("([?&])" + key + "=.*?(&|#|$)(.*)", "gi"),
+        hash;
+
+    if (re.test(url)) {
+        if (typeof value !== 'undefined' && value !== null)
+            return url.replace(re, '$1' + key + "=" + value + '$2$3');
+        else {
+            hash = url.split('#');
+            url = hash[0].replace(re, '$1$3').replace(/(&|\?)$/, '');
+            if (typeof hash[1] !== 'undefined' && hash[1] !== null)
+                url += '#' + hash[1];
+            return url;
+        }
+    }
+    else {
+        if (typeof value !== 'undefined' && value !== null) {
+            var separator = url.indexOf('?') !== -1 ? '&' : '?';
+            hash = url.split('#');
+            url = hash[0] + separator + key + '=' + value;
+            if (typeof hash[1] !== 'undefined' && hash[1] !== null)
+                url += '#' + hash[1];
+            return url;
+        }
+        else
+            return url;
+    }
+}
+
+/** https://stackoverflow.com/a/901144/3413723 */
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
