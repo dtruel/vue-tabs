@@ -97,7 +97,24 @@ var VueTabs = {
             this.tryChangeRoute(route);
             //save tab route in querystring
             if (this.querystringId) {
-                var newUrl = UpdateQueryString(this.querystringId, newTab.title, window.location.href);
+                var querystringId = encodeURIComponent(this.querystringId);
+                var newTabTitle = encodeURIComponent(newTab.title);
+                var newUrl;
+                //if no querystring, add it to the end of the url
+                if (window.location.href.indexOf(querystringId) === -1) {
+                    newUrl = window.location.href + ('?' + querystringId + '=' + newTabTitle);
+                } else {
+                    //if there is a querystring, but the querystringId isn't in there append it
+                    if (window.location.href.indexOf(querystringId + '=') === -1) {
+                        newUrl = window.location.href + ('&' + querystringId + '=' + newTabTitle);
+                    } else {
+                        //find the querystring item and match it to the new value
+                        var regex = new RegExp('(' + querystringId + '=.*?)($|&)', "i");
+                        newUrl = window.location.href.replace(regex, function (match, p1, p2) {
+                            return querystringId + '=' + newTabTitle + p2;
+                        });
+                    }
+                }
                 window.history.replaceState({ path: newUrl }, '', newUrl);
             }
         },
@@ -303,30 +320,6 @@ var VueTabs = {
         }
     }
 };
-
-/** https://stackoverflow.com/users/1187814/ellemayo */
-function UpdateQueryString(key, value, url) {
-    if (!url) url = window.location.href;
-    var re = new RegExp("([?&])" + key + "=.*?(&|#|$)(.*)", "gi"),
-        hash;
-
-    if (re.test(url)) {
-        if (typeof value !== 'undefined' && value !== null) return url.replace(re, '$1' + key + "=" + value + '$2$3');else {
-            hash = url.split('#');
-            url = hash[0].replace(re, '$1$3').replace(/(&|\?)$/, '');
-            if (typeof hash[1] !== 'undefined' && hash[1] !== null) url += '#' + hash[1];
-            return url;
-        }
-    } else {
-        if (typeof value !== 'undefined' && value !== null) {
-            var separator = url.indexOf('?') !== -1 ? '&' : '?';
-            hash = url.split('#');
-            url = hash[0] + separator + key + '=' + value;
-            if (typeof hash[1] !== 'undefined' && hash[1] !== null) url += '#' + hash[1];
-            return url;
-        } else return url;
-    }
-}
 
 /** https://stackoverflow.com/a/901144/3413723 */
 function getParameterByName(name, url) {
