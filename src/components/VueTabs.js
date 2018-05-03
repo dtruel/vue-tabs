@@ -72,7 +72,6 @@ export default {
             this.$emit('input', tab.title)
         },
         changeTab(oldIndex, newIndex, route) {
-            console.log("changing", ...arguments)
             let oldTab = this.tabs[oldIndex] || {}
             let newTab = this.tabs[newIndex]
             if (newTab.disabled) return;
