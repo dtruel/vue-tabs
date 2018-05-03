@@ -86,9 +86,6 @@ var VueTabs = {
             this.$emit('input', tab.title);
         },
         changeTab: function changeTab(oldIndex, newIndex, route) {
-            var _console;
-
-            (_console = console).log.apply(_console, ["changing"].concat(Array.prototype.slice.call(arguments)));
             var oldTab = this.tabs[oldIndex] || {};
             var newTab = this.tabs[newIndex];
             if (newTab.disabled) return;
